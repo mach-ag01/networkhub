@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: networkhub-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /health/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: networkhub-api.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: networkhub-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+databases:
+  - name: networkhub-db
+    databaseName: networkhub
+    user: networkhub
